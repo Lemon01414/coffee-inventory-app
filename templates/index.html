@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>コーヒーショップ在庫管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .form-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .search-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e6f0fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .form-container .form-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-container label {
+            width: 80px;
+            text-align: right;
+        }
+        .form-container input[type="text"], 
+        .form-container input[type="number"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #b2bec3;
+            border-radius: 5px;
+        }
+        .form-container input[type="submit"] {
+            align-self: flex-start;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #00b894;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .form-container input[type="submit"]:hover {
+            background-color: #009875;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #dfe6e9;
+        }
+        th {
+            background-color: #74b9ff;
+            color: #ffffff;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .low-stock {
+            background-color: #ffe6e6;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            border: 1px solid #b2bec3;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        input[type="submit"] {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #00b894;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #009875;
+        }
+        .delete-btn {
+            background-color: #ff7675;
+        }
+        .delete-btn:hover {
+            background-color: #d63031;
+        }
+        .category-btn {
+            background-color: #fdcb6e;
+        }
+        .category-btn:hover {
+            background-color: #e8b923;
+        }
+    </style>
+</head>
+<body>
+    <h1>在庫一覧</h1>
+    
+    <!-- 検索フォーム -->
+    <div class="search-container">
+        <h2>検索</h2>
+        <form action="{{ url_for('home') }}" method="POST">
+            <label>商品名: <input type="text" name="search_name" value="{{ search_name }}"></label>
+            <label>カテゴリ: <input type="text" name="search_category" value="{{ search_category }}"></label>
+            <input type="submit" value="検索">
+        </form>
+    </div>
+    
+    <!-- 商品追加フォーム -->
+    <div class="form-container">
+        <h2>商品追加</h2>
+        <form action="{{ url_for('add_item') }}" method="POST">
+            <div class="form-group">
+                <label>商品名:</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>在庫数:</label>
+                <input type="number" name="stock" required>
+            </div>
+            <div class="form-group">
+                <label>カテゴリ:</label>
+                <input type="text" name="category" required>
+            </div>
+            <input type="submit" value="追加">
+        </form>
+    </div>
+    
+    <!-- 在庫一覧 -->
+    {% if items|length == 0 %}
+        <p style="text-align: center; color: #e74c3c;">該当する商品がありません</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>商品名 (inventory)</th>
+                <th>商品名 (items)</th>
+                <th>カテゴリ</th>
+                <th>在庫数</th>
+                <th>在庫更新</th>
+                <th>カテゴリ編集</th>
+                <th>削除</th>
+            </tr>
+            {% for item in items %}
+            <tr {% if item.low_stock %}class="low-stock"{% endif %}>
+                <td>{{ item.name }}</td>
+                <td>{{ item.item_name if item.item_name else item.name }}</td>
+                <td>{{ item.category if item.category else '未設定' }}</td>
+                <td>{{ item.stock }}</td>
+                <td>
+                    <form action="{{ url_for('update_item', item_id=item.id) }}" method="POST">
+                        <input type="number" name="stock" value="{{ item.stock }}" required>
+                        <input type="submit" value="更新">
+                    </form>
+                </td>
+                <td>
+                    <form action="{{ url_for('edit_category', item_id=item.id) }}" method="POST">
+                        <input type="text" name="category" value="{{ item.category if item.category else '未設定' }}" required>
+                        <input type="submit" value="カテゴリ更新" class="category-btn">
+                    </form>
+                </td>
+                <td>
+                    <form action="{{ url_for('delete_item', item_id=item.id) }}" method="POST">
+                        <input type="submit" value="削除" class="delete-btn" onclick="return confirm('本当に削除しますか？');">
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    
+    <!-- 合計在庫数 -->
+    <div style="margin-top: 20px; text-align: center; font-size: 18px; color: #2c3e50;">
+        合計在庫数: {{ total_stock }} 個
+    </div>
+</body>
+</html>
