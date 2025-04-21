@@ -20,12 +20,13 @@ def init_db():
                 name TEXT NOT NULL,
                 display_name TEXT,
                 category TEXT,
-                stock INTEGER
+                stock INTEGER,
+                unit TEXT
             )
         ''')
-        # 初期データを挿入（現在の状態に基づく）
-        c.execute("INSERT INTO items (name, display_name, category, stock) VALUES ('ミルク', '牛乳', '飲み物', 10)")
-        c.execute("INSERT INTO items (name, display_name, category, stock) VALUES ('ケーキ', 'チョコケーキ', '食べ物', 10)")
+        # 初期データを挿入（単位を自由入力形式に合わせて調整）
+        c.execute("INSERT INTO items (name, display_name, category, stock, unit) VALUES ('ミルク', '牛乳', '飲み物', 10, 'リットル')")
+        c.execute("INSERT INTO items (name, display_name, category, stock, unit) VALUES ('ケーキ', 'チョコケーキ', '食べ物', 10, '個')")
         conn.commit()
         print("データベースを初期化しました")
     except sqlite3.Error as e:
@@ -44,6 +45,7 @@ def index():
             'display_name': row['display_name'],
             'category': row['category'],
             'stock': row['stock'],
+            'unit': row['unit'],
             'low_stock': row['low_stock']
         }
         for row in c.fetchall()
@@ -59,10 +61,11 @@ def add_item():
     display_name = request.form['display_name']
     stock = int(request.form['stock'])
     category = request.form['category']
+    unit = request.form['unit']
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute("INSERT INTO items (name, display_name, category, stock) VALUES (?, ?, ?, ?)",
-              (name, display_name, category, stock))
+    c.execute("INSERT INTO items (name, display_name, category, stock, unit) VALUES (?, ?, ?, ?, ?)",
+              (name, display_name, category, stock, unit))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
@@ -88,6 +91,7 @@ def search():
             'display_name': row['display_name'],
             'category': row['category'],
             'stock': row['stock'],
+            'unit': row['unit'],
             'low_stock': row['low_stock']
         }
         for row in c.fetchall()

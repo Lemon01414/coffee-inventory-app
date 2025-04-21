@@ -21,7 +21,7 @@
             if (lowStockItems.length > 0) {
                 let message = "以下の商品の在庫が少なくなっています:\n";
                 lowStockItems.forEach(item => {
-                    message += `${item.display_name || item.name}: ${item.stock}個\n`;
+                    message += `${item.display_name || item.name}: ${item.stock}${item.unit}\n`;
                 });
                 alert(message);
             }
@@ -58,6 +58,9 @@
             在庫数: <input type="number" name="stock">
         </div>
         <div>
+            単位: <input type="text" name="unit" placeholder="例: 個, g, L">
+        </div>
+        <div>
             カテゴリ: <input type="text" name="category">
         </div>
         <div>
@@ -80,10 +83,10 @@
             <td>{{ item.name }}</td>
             <td>{{ item.display_name if item.display_name else item.name }}</td>
             <td>{{ item.category if item.category else '-' }}</td>
-            <td>{{ item.stock }}</td>
+            <td>{{ item.stock }} {{ item.unit }}</td>
             <td>
                 <form action="{{ url_for('update_stock', name=item.name) }}" method="post">
-                    <input type="number" name="stock" value="{{ item.stock }}" style="width: 60px;">
+                    <input type="number" name="stock" value="{{ item.stock }}" style="width: 60px;" placeholder="現在の在庫: {{ item.stock }} {{ item.unit }}">
                     <input type="submit" value="更新">
                 </form>
             </td>
@@ -103,7 +106,7 @@
     </table>
 
     <div style="margin-top: 10px; text-align: center;">
-        合計在庫数: {{ total_stock }} 個
+        合計在庫数: {{ total_stock }} （単位は商品ごとに異なります）
     </div>
 </body>
 </html>
